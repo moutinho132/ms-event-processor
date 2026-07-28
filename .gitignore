@@ -89,3 +89,8 @@ logs/
 *.key
 *.p12
 *.jks
+
+# Extra documentation (kept locally only)
+QUICK-START.md
+TESTING.md
+DIRECTO-GUIA.md
