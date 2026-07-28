@@ -1,0 +1,327 @@
+{
+  "info": {
+    "_postman_id": "ms-event-processor-collection",
+    "name": "MS-Event-Processor API",
+    "description": "Colección de pruebas para MS-Event-Processor - Microservicio Event-Driven para procesamiento de órdenes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🚀 Kafka - Enviar Mensajes",
+      "item": [
+        {
+          "name": "Enviar Mensaje de Prueba a Kafka",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/kafka/send-test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "kafka", "send-test"]
+            },
+            "description": "Envía un mensaje de prueba con datos aleatorios al tópico orders-created de Kafka.\n\n**Equivalente a:** `./test-producer.sh`"
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar Mensaje Custom a Kafka",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{$guid}}\",\n  \"customerId\": \"{{$guid}}\",\n  \"eventType\": \"CREATED\",\n  \"totalAmount\": 250.00,\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"productId\": \"{{$guid}}\",\n      \"productName\": \"Premium Widget\",\n      \"quantity\": 3,\n      \"unitPrice\": 83.33\n    }\n  ],\n  \"shippingAddress\": {\n    \"street\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"postalCode\": \"10001\",\n    \"country\": \"USA\"\n  },\n  \"metadata\": {\n    \"source\": \"postman-test\",\n    \"correlationId\": \"{{$guid}}\",\n    \"timestamp\": \"{{$isoTimestamp}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/kafka/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "kafka", "send"]
+            },
+            "description": "Envía un mensaje custom a Kafka.\n\nEl tópico se determina automáticamente según eventType:\n- CREATED → orders-created\n- UPDATED → orders-updates\n- CANCELLED → orders-cancelled"
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar Evento UPDATE a Kafka",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"customerId\": \"customer-123\",\n  \"eventType\": \"UPDATED\",\n  \"totalAmount\": 500.00,\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"productId\": \"product-456\",\n      \"productName\": \"Updated Product\",\n      \"quantity\": 5,\n      \"unitPrice\": 100.00\n    }\n  ],\n  \"metadata\": {\n    \"source\": \"postman-test\",\n    \"correlationId\": \"{{$guid}}\",\n    \"timestamp\": \"{{$isoTimestamp}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/kafka/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "kafka", "send"]
+            },
+            "description": "Actualiza una orden existente.\n\n**Requisito:** La orden debe existir previamente.\n**Reemplazar:** `{{order_id}}` con el ID de una orden existente."
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar Evento CANCEL a Kafka",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"customerId\": \"customer-123\",\n  \"eventType\": \"CANCELLED\",\n  \"totalAmount\": 250.00,\n  \"currency\": \"USD\",\n  \"metadata\": {\n    \"source\": \"postman-test\",\n    \"correlationId\": \"{{$guid}}\",\n    \"timestamp\": \"{{$isoTimestamp}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/kafka/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "kafka", "send"]
+            },
+            "description": "Cancela una orden existente.\n\n**Requisito:** La orden debe existir previamente.\n**Reemplazar:** `{{order_id}}` con el ID de una orden existente."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🗄️ Base de Datos - Verificar Órdenes",
+      "item": [
+        {
+          "name": "Ver Todas las Órdenes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/database/check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "database", "check"]
+            },
+            "description": "Lista todas las órdenes en la base de datos.\n\n**Equivalente a:** `./check-orders.sh`"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver Orden Específica + Auditoría",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/database/check/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "database", "check", "{{order_id}}"]
+            },
+            "description": "Obtiene una orden específica con su historial de auditoría completo.\n\n**Equivalente a:** `./check-orders.sh {order_id}`\n\n**Variables:** Reemplazar `{{order_id}}` con el ID de la orden."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚡ Procesamiento Directo (Sin Kafka)",
+      "item": [
+        {
+          "name": "Procesar Orden Directamente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{$guid}}\",\n  \"customerId\": \"{{$guid}}\",\n  \"eventType\": \"CREATED\",\n  \"totalAmount\": 300.00,\n  \"currency\": \"USD\",\n  \"items\": [\n    {\n      \"productId\": \"{{$guid}}\",\n      \"productName\": \"Direct Process Product\",\n      \"quantity\": 2,\n      \"unitPrice\": 150.00\n    }\n  ],\n  \"metadata\": {\n    \"source\": \"direct-api-test\",\n    \"correlationId\": \"{{$guid}}\",\n    \"timestamp\": \"{{$isoTimestamp}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/process",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "process"]
+            },
+            "description": "Procesa una orden de manera síncrona sin usar Kafka.\n\nRetorna la orden procesada inmediatamente."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear Orden de Prueba Rápida",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/create-test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "create-test"]
+            },
+            "description": "Crea una orden con datos de prueba generados automáticamente.\n\nIdeal para pruebas rápidas."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📋 Operaciones CRUD",
+      "item": [
+        {
+          "name": "Obtener Orden por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "{{order_id}}"]
+            },
+            "description": "Obtiene una orden por su ID único."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Órdenes (Con Filtros)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders?status=PENDING",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "Filtrar por estado (PENDING, CONFIRMED, CANCELLED, etc.)"
+                },
+                {
+                  "key": "customerId",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filtrar por ID de cliente"
+                }
+              ]
+            },
+            "description": "Lista órdenes con filtros opcionales por estado o cliente."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar Orden",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "{{order_id}}", "cancel"]
+            },
+            "description": "Cancela una orden existente (cambia estado a CANCELLED)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Verifica el estado de salud de la aplicación."
+          },
+          "response": []
+        },
+        {
+          "name": "Application Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/info",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "info"]
+            },
+            "description": "Información de la aplicación."
+          },
+          "response": []
+        },
+        {
+          "name": "Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "metrics"]
+            },
+            "description": "Métricas de la aplicación."
+          },
+          "response": []
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/prometheus",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "prometheus"]
+            },
+            "description": "Métricas en formato Prometheus."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "3d034ee8-7da0-498a-bed6-f52704591b0c",
+      "type": "string",
+      "description": "ID de una orden existente (reemplazar según sea necesario)"
+    }
+  ]
+}

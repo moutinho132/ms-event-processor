@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Branch on Task Completion",
+  "description": "Cuando se completa una tarea del spec, crea una nueva rama con el nombre de la tarea, hace commit de los cambios y los sube al repositorio remoto",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "La tarea ha sido completada. Por favor:\n1. Crea una nueva rama con el nombre 'feature/task-{taskName}' (usa el nombre de la tarea completada)\n2. Haz commit de todos los cambios con un mensaje descriptivo siguiendo convenciones convencionales (feat, fix, docs, etc.)\n3. Sube la rama al repositorio remoto usando 'git push -u origin feature/task-{taskName}'\n\nAsegúrate de seguir las convenciones de commits:\n- feat: para nuevas características\n- fix: para correcciones de errores\n- docs: para cambios en documentación\n- refactor: para refactorizaciones\n- test: para añadir o modificar tests\n- chore: para tareas de mantenimiento"
+  }
+}

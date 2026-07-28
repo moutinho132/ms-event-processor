@@ -1,0 +1,20 @@
+{
+  "orderId": "3d034ee8-7da0-498a-bed6-f52704591b0c",
+  "customerId": "1d3fecb1-830c-4c0f-b81a-0f7bba1dd3e1",
+  "eventType": "CREATED",
+  "totalAmount": 150.50,
+  "currency": "USD",
+  "items": [
+    {
+      "productId": "20974ab2-f95e-4775-b429-98ccfb19541b",
+      "productName": "Test Product",
+      "quantity": 2,
+      "unitPrice": 75.25
+    }
+  ],
+  "metadata": {
+    "source": "test-script",
+    "correlationId": "234b0b05-7e06-4b65-87d1-08bc3a82a5d6",
+    "timestamp": "2026-07-28T22:17:43Z"
+  }
+}

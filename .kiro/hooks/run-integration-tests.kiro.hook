@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Run Integration Tests on Task Completion",
+  "description": "Ejecuta pruebas de integración automáticamente después de completar una tarea del spec usando Testcontainers",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd /Users/fernandomoutinho/Documents/ms-event-processor && ./mvnw verify -Dtest=\"*IntegrationTest\" --batch-mode",
+    "timeout": 300
+  }
+}

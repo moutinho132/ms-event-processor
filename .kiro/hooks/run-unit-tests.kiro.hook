@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Run Unit Tests on Task Completion",
+  "description": "Ejecuta pruebas unitarias automáticamente después de completar una tarea del spec para validar que el código funciona correctamente",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd /Users/fernandomoutinho/Documents/ms-event-processor && ./mvnw test -Dtest=\"!*IntegrationTest\" --batch-mode",
+    "timeout": 120
+  }
+}
