@@ -107,6 +107,13 @@ jobs:
           AWS_REGION: us-east-1
           SPRING_PROFILES_ACTIVE: test
       
+      # Análisis de SonarCloud
+      - name: SonarCloud Analysis
+        run: ./mvnw sonar:sonar -DskipITs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
       # Subir reportes de test en caso de fallo
       - name: Subir reportes de test
         if: failure()
