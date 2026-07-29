@@ -1,0 +1,173 @@
+<div class="order-detail-container">
+  <!-- Back Button -->
+  <div class="back-link">
+    <a routerLink="/orders">← Volver a la lista</a>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando detalles...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-container" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    <span>{{ error }}</span>
+    <button class="btn btn-sm btn-primary" (click)="loadOrderDetails()">Reintentar</button>
+  </div>
+
+  <!-- Order Details -->
+  <div class="detail-content" *ngIf="!loading && order">
+    <!-- Order Header -->
+    <div class="order-header">
+      <div class="order-title">
+        <h1>Orden #{{ order.orderId | slice:0:8 }}</h1>
+        <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+          {{ getStatusLabel(order.status) }}
+        </span>
+      </div>
+      <div class="order-actions" *ngIf="order.status !== 'CANCELLED' && order.status !== 'PROCESSED'">
+        <button class="btn btn-danger" (click)="cancelOrder()">
+          ❌ Cancelar Orden
+        </button>
+      </div>
+    </div>
+
+    <!-- Order Info Cards -->
+    <div class="info-grid">
+      <!-- Customer Info -->
+      <div class="info-card">
+        <h3>👤 Información del Cliente</h3>
+        <div class="info-row">
+          <span class="label">Customer ID:</span>
+          <span class="value">{{ order.customerId }}</span>
+        </div>
+        <div class="info-row" *ngIf="order.shippingAddress">
+          <span class="label">Dirección:</span>
+          <span class="value">
+            {{ order.shippingAddress.street }}<br>
+            {{ order.shippingAddress.city }}, {{ order.shippingAddress.state }}<br>
+            {{ order.shippingAddress.postalCode }}, {{ order.shippingAddress.country }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Order Info -->
+      <div class="info-card">
+        <h3>💰 Información de Pago</h3>
+        <div class="info-row">
+          <span class="label">Monto Total:</span>
+          <span class="value amount">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Moneda:</span>
+          <span class="value">{{ order.currency }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Estado:</span>
+          <span class="value">{{ getStatusLabel(order.status) }}</span>
+        </div>
+      </div>
+
+      <!-- Timestamps -->
+      <div class="info-card">
+        <h3>📅 Fechas</h3>
+        <div class="info-row">
+          <span class="label">Creada:</span>
+          <span class="value">{{ formatDate(order.createdAt) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Actualizada:</span>
+          <span class="value">{{ formatDate(order.updatedAt) }}</span>
+        </div>
+        <div class="info-row" *ngIf="order.processedAt">
+          <span class="label">Procesada:</span>
+          <span class="value">{{ formatDate(order.processedAt) }}</span>
+        </div>
+        <div class="info-row" *ngIf="order.cancelledAt">
+          <span class="label">Cancelada:</span>
+          <span class="value">{{ formatDate(order.cancelledAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="items-section">
+      <h3>📦 Items de la Orden</h3>
+      <div class="items-table-container" *ngIf="order.items && order.items.length > 0">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of order.items">
+              <td>{{ item.productName }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ formatCurrency(item.unitPrice, order.currency) }}</td>
+              <td>{{ formatCurrency(item.quantity * item.unitPrice, order.currency) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-right"><strong>Total:</strong></td>
+              <td class="total">{{ formatCurrency(order.totalAmount, order.currency) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="no-items" *ngIf="!order.items || order.items.length === 0">
+        No hay items en esta orden
+      </div>
+    </div>
+
+    <!-- Audit Log -->
+    <div class="audit-section">
+      <h3>📋 Historial de Auditoría ({{ auditLog.length }} eventos)</h3>
+      <div class="audit-timeline" *ngIf="auditLog.length > 0">
+        <div class="audit-item" *ngFor="let audit of auditLog; let i = index">
+          <div class="audit-marker" [ngClass]="'marker-' + audit.eventType.toLowerCase()"></div>
+          <div class="audit-content">
+            <div class="audit-header">
+              <span class="audit-event">{{ getEventTypeLabel(audit.eventType) }}</span>
+              <span class="audit-date">{{ formatDate(audit.processedAt) }}</span>
+            </div>
+            <div class="audit-details">
+              <span class="detail-item">
+                <strong>Estado:</strong> 
+                <span class="status-badge small" [ngClass]="getStatusClass(audit.status)">
+                  {{ getStatusLabel(audit.status) }}
+                </span>
+              </span>
+              <span class="detail-item">
+                <strong>Source:</strong> {{ audit.source }}
+              </span>
+              <span class="detail-item">
+                <strong>Correlation ID:</strong> {{ audit.correlationId | slice:0:8 }}...
+              </span>
+            </div>
+            <div class="audit-notes" *ngIf="audit.notes">
+              <strong>Notas:</strong> {{ audit.notes }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="no-audit" *ngIf="auditLog.length === 0">
+        No hay registros de auditoría
+      </div>
+    </div>
+  </div>
+
+  <!-- Not Found -->
+  <div class="not-found" *ngIf="!loading && !order && !error">
+    <div class="not-found-icon">🔍</div>
+    <h3>Orden no encontrada</h3>
+    <p>No se encontró la orden con ID: {{ orderId }}</p>
+    <a routerLink="/orders" class="btn btn-primary">Volver a la lista</a>
+  </div>
+</div>

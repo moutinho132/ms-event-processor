@@ -1,0 +1,115 @@
+<div class="order-list-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>📦 Gestión de Órdenes</h1>
+    <p class="subtitle">Microservicio Event-Driven - Procesamiento de Órdenes</p>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-bar">
+    <div class="actions-left">
+      <button class="btn btn-primary" (click)="createTestOrder()" [disabled]="loading">
+        <span class="icon">➕</span> Crear Orden Rápida
+      </button>
+      <button class="btn btn-secondary" (click)="sendTestMessage()" [disabled]="loading">
+        <span class="icon">📤</span> Enviar a Kafka
+      </button>
+    </div>
+    <div class="actions-right">
+      <button class="btn btn-outline" (click)="loadOrders()" [disabled]="loading">
+        <span class="icon">🔄</span> Actualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ totalOrders }}</div>
+        <div class="stat-label">Total Órdenes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ pendingCount }}</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ processedCount }}</div>
+        <div class="stat-label">Procesadas</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">❌</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ cancelledCount }}</div>
+        <div class="stat-label">Canceladas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando órdenes...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-container" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    <span>{{ error }}</span>
+    <button class="btn btn-sm" (click)="loadOrders()">Reintentar</button>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="table-container" *ngIf="!loading && !error && orders.length > 0">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer ID</th>
+          <th>Estado</th>
+          <th>Monto Total</th>
+          <th>Items</th>
+          <th>Creada</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders">
+          <td class="order-id">
+            <a [routerLink]="['/orders', order.orderId]">{{ order.orderId | slice:0:8 }}...</a>
+          </td>
+          <td>{{ order.customerId | slice:0:8 }}...</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </td>
+          <td class="amount">{{ formatCurrency(order.totalAmount, order.currency) }}</td>
+          <td>{{ order.items?.length || 0 }} items</td>
+          <td>{{ formatDate(order.createdAt) }}</td>
+          <td class="actions">
+            <a [routerLink]="['/orders', order.orderId]" class="btn btn-sm btn-info">
+              Ver Detalles
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && !error && orders.length === 0">
+    <div class="empty-icon">📭</div>
+    <h3>No hay órdenes</h3>
+    <p>Crea una orden de prueba para comenzar</p>
+    <button class="btn btn-primary" (click)="createTestOrder()">Crear Orden de Prueba</button>
+  </div>
+</div>
