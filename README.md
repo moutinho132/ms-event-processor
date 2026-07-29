@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![AWS SQS](https://img.shields.io/badge/AWS-SQS-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/sqs/)
 [![CI Pipeline](https://github.com/moutinho132/ms-event-processor/actions/workflows/ci.yml/badge.svg)](https://github.com/moutinho132/ms-event-processor/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/moutinho132/ms-event-processor/branch/develop/graph/badge.svg)](https://codecov.io/gh/moutinho132/ms-event-processor)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
 Microservicio event-driven en Java para procesar órdenes de forma asíncrona, idempotente y reactiva, aplicando arquitectura hexagonal y patrones de microservicios modernos.
 
