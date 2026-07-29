@@ -94,3 +94,9 @@ logs/
 QUICK-START.md
 TESTING.md
 DIRECTO-GUIA.md
+
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.nx/

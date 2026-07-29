@@ -1,8 +1,8 @@
 services:
-  # MS-Event-Processor Application
+  # MS-Event-Processor Application (Backend)
   app:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     container_name: ms-event-processor-app
     ports:
@@ -26,6 +26,21 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+    networks:
+      - ms-event-processor-network
+    restart: unless-stopped
+
+  # Frontend (Angular)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: ms-event-processor-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - app
     networks:
       - ms-event-processor-network
     restart: unless-stopped
@@ -94,7 +109,7 @@ services:
       - "4566:4566"
     volumes:
       - localstack_data:/var/lib/localstack
-      - ./localstack/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh:ro
+      - ./backend/localstack/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
       interval: 30s

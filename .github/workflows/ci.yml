@@ -93,7 +93,7 @@ jobs:
       
       # Ejecutar build y tests (solo unit tests, los de integración usan testcontainers)
       - name: Build y Tests
-        run: ./mvnw clean verify -DskipITs
+        run: cd backend && ./mvnw clean verify -DskipITs
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -127,8 +127,8 @@ jobs:
         with:
           name: test-reports
           path: |
-            target/surefire-reports/
-            target/failsafe-reports/
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
       
       # Subir cobertura de código
       - name: Subir cobertura de código
@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: target/site/jacoco/
+          path: backend/target/site/jacoco/
       
       # Verificar status de éxito
       - name: Verificar build exitoso
