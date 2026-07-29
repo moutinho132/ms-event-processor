@@ -241,12 +241,22 @@
   color: #92400e;
 }
 
+.status-confirmed {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 .status-processing {
   background: #dbeafe;
   color: #1e40af;
 }
 
-.status-processed {
+.status-shipped {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.status-delivered {
   background: #d1fae5;
   color: #065f46;
 }
@@ -256,9 +266,9 @@
   color: #991b1b;
 }
 
-.status-failed {
-  background: #fecaca;
-  color: #7f1d1d;
+.status-refunded {
+  background: #f3e8ff;
+  color: #6b21a8;
 }
 
 // Empty State

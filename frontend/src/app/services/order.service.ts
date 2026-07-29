@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Order, OrderAudit, ApiResponse } from '../models/order.model';
+import { Order, OrderAudit, ApiResponse, OrderStatus, OrderItem, CancelOrderResponse, StatusUpdateResponse } from '../models/order.model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,9 +41,26 @@ export class OrderService {
     return this.http.post<ApiResponse<Order>>(`${this.apiUrl}/create-test`, {});
   }
 
-  // Cancelar orden
-  cancelOrder(orderId: string): Observable<Order> {
-    return this.http.post<Order>(`${this.apiUrl}/${orderId}/cancel`, {});
+  // Cancelar orden con envío a Kafka
+  cancelOrder(orderId: string, reason?: string): Observable<CancelOrderResponse> {
+    const params: any = {};
+    if (reason) params.reason = reason;
+    return this.http.post<CancelOrderResponse>(`${this.apiUrl}/${orderId}/cancel`, {}, { params });
+  }
+
+  // Actualizar estado de la orden
+  updateOrderStatus(orderId: string, status: OrderStatus): Observable<StatusUpdateResponse> {
+    return this.http.post<StatusUpdateResponse>(`${this.apiUrl}/${orderId}/status?status=${status}`, {});
+  }
+
+  // Agregar items a una orden
+  addItemsToOrder(orderId: string, items: OrderItem[]): Observable<ApiResponse<Order>> {
+    return this.http.post<ApiResponse<Order>>(`${this.apiUrl}/${orderId}/items`, { items });
+  }
+
+  // Obtener transiciones válidas
+  getValidTransitions(orderId: string): Observable<ApiResponse<Order>> {
+    return this.http.get<ApiResponse<Order>>(`${this.apiUrl}/${orderId}/valid-transitions`);
   }
 
   // Filtrar órdenes por status o customerId

@@ -135,14 +135,18 @@ export class OrderListComponent implements OnInit {
     switch (status) {
       case OrderStatus.PENDING:
         return 'status-pending';
+      case OrderStatus.CONFIRMED:
+        return 'status-confirmed';
       case OrderStatus.PROCESSING:
         return 'status-processing';
-      case OrderStatus.PROCESSED:
-        return 'status-processed';
+      case OrderStatus.SHIPPED:
+        return 'status-shipped';
+      case OrderStatus.DELIVERED:
+        return 'status-delivered';
       case OrderStatus.CANCELLED:
         return 'status-cancelled';
-      case OrderStatus.FAILED:
-        return 'status-failed';
+      case OrderStatus.REFUNDED:
+        return 'status-refunded';
       default:
         return '';
     }
@@ -151,10 +155,12 @@ export class OrderListComponent implements OnInit {
   getStatusLabel(status: OrderStatus): string {
     const labels: Record<OrderStatus, string> = {
       [OrderStatus.PENDING]: 'Pendiente',
+      [OrderStatus.CONFIRMED]: 'Confirmada',
       [OrderStatus.PROCESSING]: 'Procesando',
-      [OrderStatus.PROCESSED]: 'Procesado',
-      [OrderStatus.CANCELLED]: 'Cancelado',
-      [OrderStatus.FAILED]: 'Fallido'
+      [OrderStatus.SHIPPED]: 'Enviada',
+      [OrderStatus.DELIVERED]: 'Entregada',
+      [OrderStatus.CANCELLED]: 'Cancelada',
+      [OrderStatus.REFUNDED]: 'Reembolsada'
     };
     return labels[status] || status;
   }

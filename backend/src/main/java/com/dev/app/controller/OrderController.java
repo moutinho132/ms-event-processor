@@ -381,18 +381,138 @@ public class OrderController {
     }
     
     /**
-     * Cancela una orden.
+     * Cancela una orden y envía el evento a Kafka.
      */
     @PostMapping("/{orderId}/cancel")
-    @Operation(summary = "Cancelar orden")
-    public ResponseEntity<Order> cancelOrder(@PathVariable String orderId) {
+    @Operation(summary = "Cancelar orden y enviar a Kafka")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Orden cancelada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Orden no encontrada"),
+        @ApiResponse(responseCode = "400", description = "La orden no puede ser cancelada")
+    })
+    public ResponseEntity<Map<String, Object>> cancelOrder(
+            @PathVariable String orderId,
+            @RequestParam(required = false) String reason) {
+        
+        log.info("❌ Cancelando orden: {}", orderId);
+        
+        try {
+            Order order = orderEventProcessor.cancelOrderAndSendToKafka(orderId, reason);
+            
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "SUCCESS");
+            response.put("message", "Orden cancelada exitosamente");
+            response.put("order", order);
+            response.put("kafkaEvent", "Enviado a orders-cancelled topic");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "ERROR");
+            response.put("message", e.getMessage());
+            response.put("orderId", orderId);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+    
+    /**
+     * Actualiza el estado de una orden.
+     */
+    @PostMapping("/{orderId}/status")
+    @Operation(summary = "Actualizar estado de la orden")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Estado actualizado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Transición de estado inválida")
+    })
+    public ResponseEntity<Map<String, Object>> updateOrderStatus(
+            @PathVariable String orderId,
+            @RequestParam OrderStatus status) {
+        
+        log.info("📝 Actualizando estado de orden {} a {}", orderId, status);
+        
+        try {
+            Order order = orderEventProcessor.transitionOrderStatus(orderId, status);
+            
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "SUCCESS");
+            response.put("message", "Estado actualizado exitosamente");
+            response.put("order", order);
+            
+            if (status == OrderStatus.DELIVERED) {
+                response.put("snsNotification", "Email enviado al cliente");
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "ERROR");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+    
+    /**
+     * Agrega items a una orden existente.
+     */
+    @PostMapping("/{orderId}/items")
+    @Operation(summary = "Agregar items a una orden")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Items agregados exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
+    public ResponseEntity<Map<String, Object>> addItemsToOrder(
+            @PathVariable String orderId,
+            @RequestBody String itemsJson) {
+        
+        log.info("📦 Agregando items a orden: {}", orderId);
+        
+        try {
+            Order order = orderEventProcessor.addItemsToOrder(orderId, itemsJson);
+            
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "SUCCESS");
+            response.put("message", "Items agregados exitosamente");
+            response.put("order", order);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("status", "ERROR");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+    
+    /**
+     * Obtiene las transiciones de estado válidas para una orden.
+     */
+    @GetMapping("/{orderId}/valid-transitions")
+    @Operation(summary = "Obtener transiciones de estado válidas")
+    public ResponseEntity<Map<String, Object>> getValidTransitions(@PathVariable String orderId) {
         return orderRepository.findByOrderId(orderId)
                 .map(order -> {
-                    order.setStatus(OrderStatus.CANCELLED);
-                    orderRepository.save(order);
-                    return ResponseEntity.ok(order);
+                    Map<String, Object> response = new LinkedHashMap<>();
+                    response.put("currentStatus", order.getStatus());
+                    response.put("validTransitions", getValidTransitionsForStatus(order.getStatus()));
+                    return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * Obtiene las transiciones válidas para un estado.
+     */
+    private java.util.List<OrderStatus> getValidTransitionsForStatus(OrderStatus status) {
+        return switch (status) {
+            case PENDING -> java.util.List.of(OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.CANCELLED);
+            case CONFIRMED -> java.util.List.of(OrderStatus.PROCESSING, OrderStatus.CANCELLED);
+            case PROCESSING -> java.util.List.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED);
+            case SHIPPED -> java.util.List.of(OrderStatus.DELIVERED);
+            case DELIVERED, CANCELLED, REFUNDED -> java.util.List.of();
+        };
     }
     
 }

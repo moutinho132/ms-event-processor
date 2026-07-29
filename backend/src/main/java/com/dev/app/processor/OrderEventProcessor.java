@@ -8,6 +8,7 @@ import com.dev.app.entity.OrderAudit;
 import com.dev.app.entity.OrderEventType;
 import com.dev.app.entity.OrderStatus;
 import com.dev.app.exception.EventProcessingException;
+import com.dev.app.producer.SnsProducer;
 import com.dev.app.producer.SqsProducer;
 import com.dev.app.repository.OrderAuditRepository;
 import com.dev.app.repository.OrderRepository;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +40,9 @@ public class OrderEventProcessor {
     private final OrderRepository orderRepository;
     private final OrderAuditRepository orderAuditRepository;
     private final SqsProducer sqsProducer;
+    private final SnsProducer snsProducer;
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     
     /**
      * Procesa un evento de orden creada.
@@ -264,6 +268,9 @@ public class OrderEventProcessor {
                     "CANCELLED"
                 ));
         
+        // Guardar estado anterior para auditoría
+        OrderStatus previousStatus = order.getStatus();
+        
         // Actualizar status a CANCELLED
         order.setStatus(OrderStatus.CANCELLED);
         order.setCancelledAt(Instant.now());
@@ -272,7 +279,202 @@ public class OrderEventProcessor {
         // Guardar orden cancelada
         order = orderRepository.save(order);
         
-        log.info("Orden {} cancelada exitosamente", event.getOrderId());
+        // Enviar notificación SNS de cancelación
+        snsProducer.sendOrderCancelledNotification(order, event.getReason());
+        
+        log.info("Orden {} cancelada exitosamente (estado anterior: {})", 
+                event.getOrderId(), previousStatus);
+        
+        return order;
+    }
+    
+    /**
+     * Procesa una transición de estado de la orden.
+     * 
+     * @param orderId ID de la orden
+     * @param newStatus Nuevo estado
+     * @return Orden actualizada
+     */
+    @Transactional
+    public Order transitionOrderStatus(String orderId, OrderStatus newStatus) {
+        log.info("Transición de estado para orden {} -> {}", orderId, newStatus);
+        
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new EventProcessingException(
+                    String.format("Orden %s no encontrada", orderId),
+                    orderId,
+                    "STATUS_CHANGE"
+                ));
+        
+        OrderStatus previousStatus = order.getStatus();
+        
+        // Validar transición
+        validateStatusTransition(previousStatus, newStatus);
+        
+        // Actualizar estado
+        order.setStatus(newStatus);
+        order.setProcessedAt(Instant.now());
+        
+        if (newStatus == OrderStatus.CANCELLED) {
+            order.setCancelledAt(Instant.now());
+        }
+        
+        order = orderRepository.save(order);
+        
+        // Enviar a SQS
+        sqsProducer.sendMessage(SqsMessage.fromOrder(order));
+        
+        // Si está completada (DELIVERED), enviar notificación SNS
+        if (newStatus == OrderStatus.DELIVERED) {
+            snsProducer.sendOrderCompletedNotification(order);
+        }
+        
+        log.info("Orden {} actualizada de {} a {}", orderId, previousStatus, newStatus);
+        
+        return order;
+    }
+    
+    /**
+     * Valida si una transición de estado es válida.
+     */
+    private void validateStatusTransition(OrderStatus from, OrderStatus to) {
+        // Validaciones de transición basadas en los estados del enum
+        boolean valid = switch (from) {
+            case PENDING -> to == OrderStatus.CONFIRMED || to == OrderStatus.PROCESSING || to == OrderStatus.CANCELLED;
+            case CONFIRMED -> to == OrderStatus.PROCESSING || to == OrderStatus.CANCELLED;
+            case PROCESSING -> to == OrderStatus.SHIPPED || to == OrderStatus.CANCELLED;
+            case SHIPPED -> to == OrderStatus.DELIVERED;
+            case DELIVERED -> false; // Estado final
+            case CANCELLED -> false; // Estado final
+            case REFUNDED -> false; // Estado final
+        };
+        
+        if (!valid) {
+            throw new EventProcessingException(
+                String.format("Transición inválida: %s -> %s", from, to),
+                "STATUS_VALIDATION",
+                "STATUS_CHANGE"
+            );
+        }
+    }
+    
+    /**
+     * Envía evento de cancelación a Kafka.
+     * 
+     * @param orderId ID de la orden
+     * @param reason Razón de cancelación
+     */
+    @Transactional
+    public Order cancelOrderAndSendToKafka(String orderId, String reason) {
+        log.info("Cancelando orden {} y enviando a Kafka", orderId);
+        
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new EventProcessingException(
+                    String.format("Orden %s no encontrada", orderId),
+                    orderId,
+                    "CANCEL"
+                ));
+        
+        OrderStatus previousStatus = order.getStatus();
+        
+        // Actualizar estado
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setCancelledAt(Instant.now());
+        order.setProcessedAt(Instant.now());
+        
+        order = orderRepository.save(order);
+        
+        // Crear evento de cancelación
+        OrderEvent cancelEvent = OrderEvent.builder()
+                .orderId(order.getOrderId())
+                .customerId(order.getCustomerId())
+                .eventType(OrderEventType.CANCELLED)
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .reason(reason)
+                .metadata(com.dev.app.dto.EventMetadataDto.builder()
+                    .source("api-cancel")
+                    .correlationId(java.util.UUID.randomUUID().toString())
+                    .timestamp(Instant.now())
+                    .build())
+                .build();
+        
+        // Enviar a Kafka
+        try {
+            String eventJson = objectMapper.writeValueAsString(cancelEvent);
+            kafkaTemplate.send("orders-cancelled", order.getOrderId(), eventJson);
+            log.info("Evento de cancelación enviado a Kafka - OrderId: {}", order.getOrderId());
+        } catch (JsonProcessingException e) {
+            log.error("Error serializando evento de cancelación: {}", e.getMessage());
+        }
+        
+        // Enviar a SQS
+        sqsProducer.sendMessage(SqsMessage.fromOrder(order));
+        
+        // Enviar notificación SNS
+        snsProducer.sendOrderCancelledNotification(order, reason);
+        
+        // Guardar auditoría
+        saveAuditLog(cancelEvent, order, 0, true, null);
+        
+        log.info("Orden {} cancelada exitosamente (antes: {})", orderId, previousStatus);
+        
+        return order;
+    }
+    
+    /**
+     * Agrega items a una orden existente.
+     * 
+     * @param orderId ID de la orden
+     * @param itemsJson JSON con los items a agregar
+     * @return Orden actualizada
+     */
+    @Transactional
+    public Order addItemsToOrder(String orderId, String itemsJson) {
+        log.info("Agregando items a orden {}", orderId);
+        
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new EventProcessingException(
+                    String.format("Orden %s no encontrada", orderId),
+                    orderId,
+                    "ADD_ITEMS"
+                ));
+        
+        try {
+            // Parsear items del JSON
+            com.fasterxml.jackson.databind.JsonNode itemsNode = objectMapper.readTree(itemsJson);
+            
+            if (itemsNode.isArray() && itemsNode.size() > 0) {
+                var firstItem = itemsNode.get(0);
+                
+                // Actualizar campos simples (tomando el primer item)
+                if (firstItem.has("productId")) {
+                    order.setProductId(firstItem.get("productId").asText());
+                }
+                if (firstItem.has("productName")) {
+                    order.setProductName(firstItem.get("productName").asText());
+                }
+                if (firstItem.has("quantity")) {
+                    order.setQuantity(firstItem.get("quantity").asInt());
+                }
+                if (firstItem.has("unitPrice")) {
+                    order.setUnitPrice(new BigDecimal(firstItem.get("unitPrice").asText()));
+                }
+                
+                // Recalcular total si es necesario
+                if (order.getQuantity() != null && order.getUnitPrice() != null) {
+                    order.setTotalAmount(order.getUnitPrice().multiply(new BigDecimal(order.getQuantity())));
+                }
+            }
+            
+            order = orderRepository.save(order);
+            
+            log.info("Items agregados a orden {}", orderId);
+            
+        } catch (Exception e) {
+            log.error("Error parseando items: {}", e.getMessage());
+            throw new EventProcessingException("Error parseando items", orderId, "ADD_ITEMS", e);
+        }
         
         return order;
     }

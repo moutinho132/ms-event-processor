@@ -1,9 +1,11 @@
 export enum OrderStatus {
   PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
   PROCESSING = 'PROCESSING',
-  PROCESSED = 'PROCESSED',
+  SHIPPED = 'SHIPPED',
+  DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
-  FAILED = 'FAILED'
+  REFUNDED = 'REFUNDED'
 }
 
 export enum OrderEventType {
@@ -64,4 +66,24 @@ export interface ApiResponse<T> {
   auditLog?: OrderAudit[];
   auditCount?: number;
   processingTimeMs?: number;
+  validTransitions?: OrderStatus[];
+  currentStatus?: OrderStatus;
+}
+
+export interface CancelOrderResponse {
+  status: string;
+  message: string;
+  order: Order;
+  kafkaEvent?: string;
+}
+
+export interface StatusUpdateResponse {
+  status: string;
+  message: string;
+  order: Order;
+  snsNotification?: string;
+}
+
+export interface AddItemsRequest {
+  items: OrderItem[];
 }

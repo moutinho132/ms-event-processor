@@ -9,6 +9,7 @@ import com.dev.app.entity.OrderEventType;
 import com.dev.app.entity.OrderStatus;
 import com.dev.app.exception.EventProcessingException;
 import com.dev.app.exception.ValidationException;
+import com.dev.app.producer.SnsProducer;
 import com.dev.app.producer.SqsProducer;
 import com.dev.app.repository.OrderAuditRepository;
 import com.dev.app.repository.OrderRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -51,6 +53,12 @@ class OrderEventProcessorTest {
     @Mock
     private SqsProducer sqsProducer;
     
+    @Mock
+    private SnsProducer snsProducer;
+    
+    @Mock
+    private KafkaTemplate<String, String> kafkaTemplate;
+    
     private ObjectMapper objectMapper;
     
     private OrderEventProcessor processor;
@@ -59,7 +67,7 @@ class OrderEventProcessorTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
-        processor = new OrderEventProcessor(validator, orderRepository, orderAuditRepository, sqsProducer, objectMapper);
+        processor = new OrderEventProcessor(validator, orderRepository, orderAuditRepository, sqsProducer, snsProducer, objectMapper, kafkaTemplate);
     }
     
     @Test

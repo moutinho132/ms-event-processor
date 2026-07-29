@@ -6,14 +6,15 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 import java.net.URI;
 
 /**
- * Configuración de AWS SQS Client.
+ * Configuración de AWS SQS y SNS Clients.
  * 
- * Configura el cliente SQS con soporte para LocalStack en desarrollo
+ * Configura los clientes SQS y SNS con soporte para LocalStack en desarrollo
  * y pruebas locales.
  * 
  * @author MS-Event-Processor Team
@@ -45,6 +46,22 @@ public class SqsConfig {
     @Bean
     public SqsClient sqsClient() {
         return SqsClient.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)
+                ))
+                .endpointOverride(URI.create(sqsEndpoint))
+                .build();
+    }
+    
+    /**
+     * Configura el cliente SNS con endpoint personalizado para LocalStack.
+     * 
+     * @return SnsClient configurado
+     */
+    @Bean
+    public SnsClient snsClient() {
+        return SnsClient.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(accessKey, secretKey)

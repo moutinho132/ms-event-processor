@@ -75,6 +75,20 @@
             <artifactId>spring-cloud-aws-starter-sqs</artifactId>
         </dependency>
         
+        <!-- AWS SDK SNS -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.25.0</version>
+        </dependency>
+        
+        <!-- AWS SDK SQS (for direct client usage) -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+            <version>2.25.0</version>
+        </dependency>
+        
         <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

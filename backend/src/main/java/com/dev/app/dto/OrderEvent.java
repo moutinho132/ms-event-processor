@@ -50,6 +50,9 @@ public class OrderEvent {
     @JsonProperty("shippingAddress")
     private ShippingAddressDto shippingAddress;
     
+    @JsonProperty("reason")
+    private String reason;
+    
     @NotNull(message = "metadata es requerido")
     @JsonProperty("metadata")
     private EventMetadataDto metadata;
