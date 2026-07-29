@@ -25,7 +25,7 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
-public abstract class BaseIntegrationTest {
+public abstract class BaseIT {
     
     @Container
     protected static final PostgreSQLContainer<?> postgresContainer = 

@@ -1,6 +1,6 @@
 package com.dev.app.processor;
 
-import com.dev.app.config.BaseIntegrationTest;
+import com.dev.app.config.BaseIT;
 import com.dev.app.dto.EventMetadataDto;
 import com.dev.app.dto.OrderEvent;
 import com.dev.app.dto.OrderItemDto;
@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author MS-Event-Processor Team
  * @version 1.0.0
  */
-class OrderProcessingIntegrationTest extends BaseIntegrationTest {
+class OrderProcessingIT extends BaseIT {
     
     @Autowired
     private OrderRepository orderRepository;
