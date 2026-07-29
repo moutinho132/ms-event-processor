@@ -40,7 +40,7 @@ public abstract class BaseIntegrationTest {
     
     @Container
     protected static final LocalStackContainer localStackContainer = 
-        new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
+        new LocalStackContainer(DockerImageName.parse("localstack/localstack:3.7"))
             .withServices(LocalStackContainer.Service.SQS);
     
     @DynamicPropertySource
