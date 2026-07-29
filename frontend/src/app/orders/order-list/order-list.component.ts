@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../services/order.service';
+import { NotificationService } from '../../services/notification.service';
 import { Order, OrderStatus } from '../../models/order.model';
 
 @Component({
@@ -26,13 +27,42 @@ export class OrderListComponent implements OnInit {
   statusFilter: string = '';
   customerIdFilter: string = '';
 
+  // Notificaciones
+  notificationsEnabled = false;
+
   // Status options for filter
   statusOptions = Object.values(OrderStatus);
 
-  constructor(private orderService: OrderService) {}
+  constructor(
+    private orderService: OrderService,
+    public notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadOrders();
+    this.checkNotifications();
+  }
+
+  /**
+   * Verifica si las notificaciones estan disponibles
+   */
+  async checkNotifications(): Promise<void> {
+    this.notificationsEnabled = this.notificationService.isSupported();
+    if (this.notificationsEnabled) {
+      const permission = this.notificationService.checkPermission();
+      this.notificationsEnabled = permission === 'granted';
+    }
+  }
+
+  /**
+   * Solicita permiso para notificaciones
+   */
+  async enableNotifications(): Promise<void> {
+    const granted = await this.notificationService.requestPermission();
+    this.notificationsEnabled = granted;
+    if (granted) {
+      this.notificationService.notifySuccess('Notificaciones activadas');
+    }
   }
 
   loadOrders(): void {
@@ -81,12 +111,22 @@ export class OrderListComponent implements OnInit {
     this.orderService.createTestOrder().subscribe({
       next: (response) => {
         console.log('Test order created:', response);
+        // Notificacion push
+        if (this.notificationsEnabled && response.order) {
+          this.notificationService.notifyOrderCreated(
+            response.order.orderId,
+            response.order.customerId
+          );
+        }
         this.loadOrders();
       },
       error: (err) => {
         this.error = 'Error al crear orden de prueba';
         this.loading = false;
         console.error('Error creating test order:', err);
+        if (this.notificationsEnabled) {
+          this.notificationService.notifyError('Error al crear orden de prueba');
+        }
       }
     });
   }

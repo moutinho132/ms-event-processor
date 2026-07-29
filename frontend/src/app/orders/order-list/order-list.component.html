@@ -16,6 +16,13 @@
       </button>
     </div>
     <div class="actions-right">
+      <button class="btn" 
+              [ngClass]="notificationsEnabled ? 'btn-success' : 'btn-outline'" 
+              (click)="enableNotifications()" 
+              *ngIf="notificationService.isSupported()">
+        <span class="icon">{{ notificationsEnabled ? '🔔' : '🔕' }}</span> 
+        {{ notificationsEnabled ? 'Notificaciones ON' : 'Activar Notificaciones' }}
+      </button>
       <button class="btn btn-outline" (click)="loadOrders()" [disabled]="loading">
         <span class="icon">🔄</span> Actualizar
       </button>
