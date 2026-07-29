@@ -84,15 +84,20 @@ public class SqsProducer {
      */
     private void sendMessageToSqs(String messageBody, String orderId) {
         try {
-            // Construir URL de la cola (asumiendo que está en la misma cuenta y región)
-            String queueUrl = String.format("%s/%s", 
-                System.getProperty("sqs.endpoint", "http://localhost:4566"), 
-                queueName);
+            // Obtener el endpoint configurado
+            String sqsEndpoint = System.getenv("AWS_SQS_ENDPOINT");
+            if (sqsEndpoint == null || sqsEndpoint.isEmpty()) {
+                sqsEndpoint = "http://localhost:4566";
+            }
+            
+            // Construir URL de la cola para LocalStack
+            // Formato: http://sqs.{region}.localhost.localstack.cloud:4566/000000000000/{queueName}
+            // o simplemente: {endpoint}/000000000000/{queueName}
+            String queueUrl = String.format("%s/000000000000/%s", sqsEndpoint, queueName);
             
             SendMessageRequest request = SendMessageRequest.builder()
                     .queueUrl(queueUrl)
                     .messageBody(messageBody)
-                    .messageGroupId(orderId) // Para colas FIFO
                     .build();
             
             SendMessageResponse response = sqsClient.sendMessage(request);
@@ -120,9 +125,12 @@ public class SqsProducer {
         try {
             String messageBody = objectMapper.writeValueAsString(message);
             
-            String dlqUrl = String.format("%s/%s", 
-                System.getProperty("sqs.endpoint", "http://localhost:4566"), 
-                dlqName);
+            String sqsEndpoint = System.getenv("AWS_SQS_ENDPOINT");
+            if (sqsEndpoint == null || sqsEndpoint.isEmpty()) {
+                sqsEndpoint = "http://localhost:4566";
+            }
+            
+            String dlqUrl = String.format("%s/000000000000/%s", sqsEndpoint, dlqName);
             
             SendMessageRequest request = SendMessageRequest.builder()
                     .queueUrl(dlqUrl)
