@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: ms-event-processor
+  
+  # Configuración de hilos virtuales (Java 21)
+  threads:
+    virtual:
+      enabled: true
+  
+  # Configuración de Kafka
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual
+    properties:
+      spring.json.trusted.packages: "com.dev.app.dto"
+  
+  # Base de datos PostgreSQL
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/orderdb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+  
+  # Configuración JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  
+  # Configuración AWS SQS LocalStack
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:us-east-1}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:test}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:test}
+      sqs:
+        endpoint: ${AWS_SQS_ENDPOINT:http://localstack:4566}
+  
+  # Configuración de Seguridad JWT
+  security:
+    jwt:
+      secret: ${JWT_SECRET:your-production-secret-key-must-be-at-least-32-characters-long}
+      issuer: ${JWT_ISSUER:ms-event-processor}
+      expiration: 3600000
+
+# Configuración de Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Configuración de Logging
+logging:
+  level:
+    root: INFO
+    com.dev.app: INFO
+    org.springframework.kafka: INFO
+    org.hibernate.SQL: WARN
+
+# Configuración de Retry
+retry:
+  max-attempts: 3
+  initial-interval: 1000
+  multiplier: 2.0
+  max-interval: 10000
+
+# Configuración de SQS
+sqs:
+  queue:
+    name: ordenes-procesadas-queue
+    dlq-name: ordenes-procesadas-dlq
