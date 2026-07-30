@@ -1,0 +1,136 @@
+<div class="products-container">
+  <!-- Header -->
+  <div class="products-header">
+    <h2><i class="fas fa-boxes"></i> Gestión de Productos</h2>
+    <button class="btn btn-primary" (click)="createProduct()">
+      <i class="fas fa-plus"></i> Nuevo Producto
+    </button>
+  </div>
+
+  <!-- Category Filter -->
+  <div class="category-filter">
+    <button [class.active]="selectedCategory === null" (click)="filterByCategory(null)">
+      Todos
+    </button>
+    <button *ngFor="let cat of categories" 
+            [class.active]="selectedCategory === cat"
+            (click)="filterByCategory(cat)">
+      {{ cat }}
+    </button>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-cards">
+    <!-- Top Vendidos -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-trophy text-warning"></i> Top Vendidos</h5>
+        <button class="btn btn-sm" (click)="loadTopSelling()">
+          {{ showTopSelling ? 'Ocultar' : 'Ver' }}
+        </button>
+      </div>
+      <div class="card-body" *ngIf="showTopSelling">
+        <div *ngFor="let product of topProducts" class="top-product-item">
+          <span class="rank-badge">#{{ product.rank }}</span>
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" 
+               class="product-thumb" [alt]="product.productName">
+          <div class="product-info">
+            <strong>{{ product.productName }}</strong>
+            <small>Vendidos: {{ product.totalSold }}</small>
+          </div>
+          <span class="revenue">{{ product.totalRevenue | currency }}</span>
+        </div>
+        <p *ngIf="topProducts.length === 0" class="empty-message">
+          No hay datos de ventas
+        </p>
+      </div>
+    </div>
+
+    <!-- Stock Bajo -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-exclamation-triangle text-danger"></i> Stock Bajo</h5>
+        <button class="btn btn-sm btn-danger" (click)="loadLowStock()">
+          {{ showLowStock ? 'Ocultar' : 'Ver' }}
+        </button>
+      </div>
+      <div class="card-body" *ngIf="showLowStock">
+        <div *ngFor="let product of lowStockProducts" class="low-stock-item">
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" 
+               class="product-thumb" [alt]="product.name">
+          <div class="product-info">
+            <strong>{{ product.name }}</strong>
+            <small>{{ product.category }}</small>
+          </div>
+          <span class="stock-badge danger">{{ product.stock }} unidades</span>
+        </div>
+        <p *ngIf="lowStockProducts.length === 0" class="empty-message">
+          No hay productos con bajo stock
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="products-table">
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner-border"></div>
+      <p>Cargando productos...</p>
+    </div>
+
+    <table class="table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Imagen</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products" [class.inactive]="!product.active">
+          <td>
+            <img *ngIf="product.imageUrl" [src]="product.imageUrl" 
+                 [alt]="product.name">
+            <div *ngIf="!product.imageUrl" class="no-image">
+              <i class="fas fa-image"></i>
+            </div>
+          </td>
+          <td>
+            <strong>{{ product.name }}</strong>
+            <small>{{ product.description | slice:0:50 }}...</small>
+          </td>
+          <td>
+            <span class="badge bg-secondary">{{ product.category || 'Sin categoría' }}</span>
+          </td>
+          <td class="amount">{{ product.price | currency:product.currency }}</td>
+          <td [class]="getStockClass(product.stock)">
+            {{ product.stock }} unidades
+          </td>
+          <td>
+            <span class="badge" [class.bg-success]="product.active" [class.bg-danger]="!product.active">
+              {{ product.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn btn-outline-primary btn-sm" (click)="editProduct(product.productId)" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm" (click)="deleteProduct(product.productId)" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="products.length === 0">
+          <td colspan="7" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>No se encontraron productos</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
