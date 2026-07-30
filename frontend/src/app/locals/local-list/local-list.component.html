@@ -1,0 +1,81 @@
+<div class="locals-container">
+  <!-- Header -->
+  <div class="locals-header">
+    <h1>
+      <i class="fas fa-store"></i>
+      Gestión de Locales
+    </h1>
+    <button class="btn btn-primary" (click)="createLocal()">
+      <i class="fas fa-plus"></i>
+      Nuevo Local
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando locales...</p>
+  </div>
+
+  <!-- Locals Grid -->
+  <div class="locals-grid" *ngIf="!loading && locals.length > 0">
+    <div class="local-card" *ngFor="let local of locals">
+      <div class="local-card-header">
+        <h3>{{ local.name }}</h3>
+        <span class="badge" [class.active]="local.active" [class.inactive]="!local.active">
+          {{ local.active ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+      
+      <div class="local-card-body">
+        <div class="info-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>{{ local.address }}</span>
+        </div>
+        <div class="info-item" *ngIf="local.city">
+          <i class="fas fa-city"></i>
+          <span>{{ local.city }}</span>
+        </div>
+        <div class="info-item" *ngIf="local.phone">
+          <i class="fas fa-phone"></i>
+          <span>{{ local.phone }}</span>
+        </div>
+        <div class="info-item" *ngIf="local.email">
+          <i class="fas fa-envelope"></i>
+          <span>{{ local.email }}</span>
+        </div>
+        <div class="info-item warehouses" *ngIf="local.totalWarehouses !== undefined">
+          <i class="fas fa-warehouse"></i>
+          <span><strong>{{ local.totalWarehouses }}</strong> Almacenes</span>
+        </div>
+      </div>
+
+      <div class="local-card-actions">
+        <button class="btn btn-sm btn-outline-primary" (click)="editLocal(local.localId)">
+          <i class="fas fa-edit"></i> Editar
+        </button>
+        <button class="btn btn-sm btn-outline-info" (click)="viewWarehouses(local.localId)">
+          <i class="fas fa-warehouse"></i> Almacenes
+        </button>
+        <button *ngIf="local.active" class="btn btn-sm btn-outline-danger" (click)="deactivateLocal(local.localId)">
+          <i class="fas fa-times-circle"></i> Desactivar
+        </button>
+        <button *ngIf="!local.active" class="btn btn-sm btn-outline-success" (click)="activateLocal(local.localId)">
+          <i class="fas fa-check-circle"></i> Activar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && locals.length === 0">
+    <div class="empty-icon">
+      <i class="fas fa-store-slash"></i>
+    </div>
+    <h3>No hay locales registrados</h3>
+    <p>Comienza agregando tu primer local comercial</p>
+    <button class="btn btn-primary" (click)="createLocal()">
+      <i class="fas fa-plus"></i> Crear primer local
+    </button>
+  </div>
+</div>

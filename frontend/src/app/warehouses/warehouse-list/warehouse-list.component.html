@@ -1,0 +1,57 @@
+<div class="warehouses-container">
+  <div class="warehouses-header">
+    <h1><i class="fas fa-warehouse"></i> Gestión de Almacenes</h1>
+    <button class="btn btn-primary" (click)="createWarehouse()">
+      <i class="fas fa-plus"></i> Nuevo Almacén
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando almacenes...</p>
+  </div>
+
+  <div class="warehouses-grid" *ngIf="!loading && warehouses.length > 0">
+    <div class="warehouse-card" *ngFor="let warehouse of warehouses">
+      <div class="warehouse-header">
+        <h3>{{ warehouse.name }}</h3>
+        <span class="badge" [class.active]="warehouse.active" [class.inactive]="!warehouse.active">
+          {{ warehouse.active ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+      
+      <div class="warehouse-body">
+        <p *ngIf="warehouse.code"><strong><i class="fas fa-tag"></i> Código:</strong> {{ warehouse.code }}</p>
+        <p *ngIf="warehouse.localName"><strong><i class="fas fa-store"></i> Local:</strong> {{ warehouse.localName }}</p>
+        <p *ngIf="warehouse.location"><strong><i class="fas fa-map-marker-alt"></i> Ubicación:</strong> {{ warehouse.location }}</p>
+        <p *ngIf="warehouse.capacity"><strong><i class="fas fa-boxes"></i> Capacidad:</strong> {{ warehouse.capacity }} unidades</p>
+        <p *ngIf="warehouse.temperatureControlled">
+          <strong><i class="fas fa-thermometer-half"></i> Control de temperatura:</strong>
+          <span class="temp-badge">
+            {{ warehouse.minTemperature }}°C - {{ warehouse.maxTemperature }}°C
+          </span>
+        </p>
+      </div>
+
+      <div class="warehouse-actions">
+        <button class="btn btn-sm btn-primary" (click)="editWarehouse(warehouse.warehouseId)">
+          <i class="fas fa-edit"></i> Editar
+        </button>
+        <button *ngIf="warehouse.active" class="btn btn-sm btn-danger" (click)="deactivateWarehouse(warehouse.warehouseId)">
+          <i class="fas fa-ban"></i> Desactivar
+        </button>
+        <button *ngIf="!warehouse.active" class="btn btn-sm btn-success" (click)="activateWarehouse(warehouse.warehouseId)">
+          <i class="fas fa-check"></i> Activar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-data" *ngIf="!loading && warehouses.length === 0">
+    <i class="fas fa-warehouse no-data-icon"></i>
+    <p>No hay almacenes registrados</p>
+    <button class="btn btn-primary" (click)="createWarehouse()">
+      <i class="fas fa-plus"></i> Crear primer almacén
+    </button>
+  </div>
+</div>
