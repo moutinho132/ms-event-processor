@@ -19,9 +19,8 @@ services:
       AWS_REGION: us-east-1
       JWT_SECRET: your-production-secret-key-must-be-at-least-32-characters-long
       JWT_ISSUER: ms-event-processor
-      # Ollama para Chat IA (alternativa local sin restricciones geográficas)
-      # Ollama corre en el host, usamos host.docker.internal para acceder desde el contenedor
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      # Ollama para Chat IA (corre en contenedor Docker)
+      OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: llama3.2
     depends_on:
       postgres:
@@ -128,12 +127,41 @@ services:
     networks:
       - ms-event-processor-network
 
+  # Ollama - Chat IA Local (sin restricciones geográficas)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ms-event-processor-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_ORIGINS=*  # Permitir CORS desde el frontend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - ms-event-processor-network
+    restart: unless-stopped
+    # Para GPUs NVIDIA (descomentar si tienes GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
 volumes:
   postgres_data:
     driver: local
   kafka_data:
     driver: local
   localstack_data:
+    driver: local
+  ollama_data:
     driver: local
 
 networks:
