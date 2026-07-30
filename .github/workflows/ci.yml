@@ -112,10 +112,10 @@ jobs:
         run: |
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f target/site/jacoco/index.html ]; then
+          if [ -f backend/target/site/jacoco/index.html ]; then
             echo "✅ JaCoCo report generated successfully" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📁 Report location: target/site/jacoco/" >> $GITHUB_STEP_SUMMARY
+            echo "📁 Report location: backend/target/site/jacoco/" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ No coverage report found" >> $GITHUB_STEP_SUMMARY
           fi
