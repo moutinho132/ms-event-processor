@@ -86,7 +86,7 @@ export class OrderListComponent implements OnInit {
 
   updateStats(): void {
     this.pendingCount = this.orders.filter(o => o.status === OrderStatus.PENDING).length;
-    this.processedCount = this.orders.filter(o => o.status === OrderStatus.PROCESSED).length;
+    this.processedCount = this.orders.filter(o => o.status === OrderStatus.DELIVERED).length;
     this.cancelledCount = this.orders.filter(o => o.status === OrderStatus.CANCELLED).length;
   }
 

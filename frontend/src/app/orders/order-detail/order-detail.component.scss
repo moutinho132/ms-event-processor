@@ -12,9 +12,14 @@
     color: #667eea;
     text-decoration: none;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s ease;
     
     &:hover {
       text-decoration: underline;
+      color: #5a67d8;
     }
   }
 }
@@ -35,6 +40,11 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
+
+  p {
+    color: #6b7280;
+    margin-top: 16px;
+  }
 }
 
 @keyframes spin {
@@ -52,6 +62,10 @@
   border-radius: 8px;
   color: #c53030;
   margin-bottom: 24px;
+
+  .error-icon {
+    font-size: 1.25rem;
+  }
 }
 
 // Order Header
@@ -60,6 +74,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 32px;
+  gap: 20px;
   
   .order-title {
     h1 {
@@ -68,6 +83,13 @@
       color: #1a1a2e;
       margin: 0 0 12px 0;
       font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      i {
+        color: #667eea;
+      }
     }
   }
 }
@@ -92,6 +114,13 @@
     margin: 0 0 16px 0;
     padding-bottom: 12px;
     border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: #667eea;
+    }
   }
   
   .info-row {
@@ -125,8 +154,15 @@
   margin-bottom: 32px;
   
   h3 {
-    margin: 0 0 20px 0;
+    margin: 0;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: #667eea;
+    }
   }
 }
 
@@ -137,6 +173,7 @@
 .items-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
   
   th, td {
     padding: 12px 16px;
@@ -186,6 +223,13 @@
   h3 {
     margin: 0 0 20px 0;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: #667eea;
+    }
   }
 }
 
@@ -247,6 +291,8 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
     
     .audit-event {
       font-weight: 600;
@@ -293,6 +339,7 @@
   .not-found-icon {
     font-size: 4rem;
     margin-bottom: 16px;
+    color: #d1d5db;
   }
   
   h3 {
@@ -388,29 +435,29 @@
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   
   &:hover:not(:disabled) {
-    background: #dc2626;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
   }
 }
 
 .btn-warning {
-  background: #f59e0b;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
   
   &:hover:not(:disabled) {
-    background: #d97706;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
   }
 }
 
 .btn-success {
-  background: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   
   &:hover:not(:disabled) {
-    background: #059669;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
   }
 }
 
@@ -441,6 +488,7 @@
 .status-transitions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 // Section Header
@@ -469,6 +517,7 @@
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.2s ease;
+  padding: 20px;
 }
 
 @keyframes fadeIn {
@@ -479,7 +528,7 @@
 .modal-content {
   background: white;
   border-radius: 16px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
@@ -509,6 +558,9 @@
     margin: 0;
     font-size: 1.25rem;
     color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   
   .modal-close {
@@ -542,6 +594,7 @@
     .warning-icon {
       font-size: 3rem;
       margin-bottom: 12px;
+      color: #f59e0b;
     }
     
     p {
@@ -617,6 +670,12 @@
 }
 
 // Responsive
+@media (max-width: 992px) {
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .order-detail-container {
     padding: 16px;
@@ -625,6 +684,11 @@
   .order-header {
     flex-direction: column;
     gap: 16px;
+    align-items: flex-start;
+  }
+
+  .order-title h1 {
+    font-size: 1.4rem;
   }
   
   .info-grid {
@@ -634,5 +698,53 @@
   .audit-details {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .status-transitions {
+    width: 100%;
+  }
+
+  .order-actions {
+    width: 100%;
+  }
+
+  .order-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .back-link a {
+    font-size: 0.9rem;
+  }
+
+  .info-card {
+    padding: 16px;
+  }
+
+  .info-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .items-section, .audit-section {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .not-found {
+    padding: 40px 15px;
+
+    .not-found-icon {
+      font-size: 3rem;
+    }
   }
 }

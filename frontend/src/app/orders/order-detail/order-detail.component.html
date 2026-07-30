@@ -1,7 +1,7 @@
 <div class="order-detail-container">
   <!-- Back Button -->
   <div class="back-link">
-    <a routerLink="/orders">← Volver a la lista</a>
+    <a routerLink="/orders"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
   </div>
 
   <!-- Loading -->
@@ -12,7 +12,7 @@
 
   <!-- Error -->
   <div class="error-container" *ngIf="error">
-    <span class="error-icon">⚠️</span>
+    <i class="fas fa-exclamation-triangle error-icon"></i>
     <span>{{ error }}</span>
     <button class="btn btn-sm btn-primary" (click)="loadOrderDetails()">Reintentar</button>
   </div>
@@ -22,7 +22,7 @@
     <!-- Order Header -->
     <div class="order-header">
       <div class="order-title">
-        <h1>Orden #{{ order.orderId | slice:0:8 }}</h1>
+        <h1><i class="fas fa-receipt"></i> Orden #{{ order.orderId | slice:0:8 }}</h1>
         <span class="status-badge" [ngClass]="getStatusClass(order.status)">
           {{ getStatusLabel(order.status) }}
         </span>
@@ -30,42 +30,42 @@
       <div class="order-actions">
         <!-- Botones de transición de estado -->
         <div class="status-transitions" *ngIf="validTransitions.length > 0">
-          <button *ngIf="canTransitionTo('CONFIRMED')" 
+          <button *ngIf="canTransitionTo(statusOptions[1])" 
                   class="btn btn-info" 
-                  (click)="transitionToStatus('CONFIRMED')"
+                  (click)="transitionToStatus(statusOptions[1])"
                   [disabled]="transitioningStatus">
-            ✓ Confirmar Orden
+            <i class="fas fa-check"></i> Confirmar Orden
           </button>
-          <button *ngIf="canTransitionTo('PROCESSING')" 
+          <button *ngIf="canTransitionTo(statusOptions[2])" 
                   class="btn btn-warning" 
-                  (click)="transitionToStatus('PROCESSING')"
+                  (click)="transitionToStatus(statusOptions[2])"
                   [disabled]="transitioningStatus">
-            🔄 Iniciar Procesamiento
+            <i class="fas fa-sync-alt"></i> Iniciar Procesamiento
           </button>
-          <button *ngIf="canTransitionTo('SHIPPED')" 
+          <button *ngIf="canTransitionTo(statusOptions[3])" 
                   class="btn btn-primary" 
-                  (click)="transitionToStatus('SHIPPED')"
+                  (click)="transitionToStatus(statusOptions[3])"
                   [disabled]="transitioningStatus">
-            📦 Marcar como Enviada
+            <i class="fas fa-box"></i> Marcar como Enviada
           </button>
-          <button *ngIf="canTransitionTo('DELIVERED')" 
+          <button *ngIf="canTransitionTo(statusOptions[4])" 
                   class="btn btn-success" 
-                  (click)="transitionToStatus('DELIVERED')"
+                  (click)="transitionToStatus(statusOptions[4])"
                   [disabled]="transitioningStatus">
-            ✅ Marcar como Entregada
+            <i class="fas fa-check-circle"></i> Marcar como Entregada
           </button>
         </div>
         
-        // Agregar Items -->
+        <!-- Agregar Item -->
         <button class="btn btn-primary" (click)="openAddItemModal()" 
                 *ngIf="order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && order.status !== 'REFUNDED'">
-          ➕ Agregar Item
+          <i class="fas fa-plus"></i> Agregar Item
         </button>
         
         <!-- Cancelar -->
         <button class="btn btn-danger" (click)="openCancelModal()" 
                 *ngIf="order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && order.status !== 'REFUNDED'">
-          ❌ Cancelar Orden
+          <i class="fas fa-times-circle"></i> Cancelar Orden
         </button>
       </div>
     </div>
@@ -74,7 +74,7 @@
     <div class="info-grid">
       <!-- Customer Info -->
       <div class="info-card">
-        <h3>👤 Información del Cliente</h3>
+        <h3><i class="fas fa-user"></i> Información del Cliente</h3>
         <div class="info-row">
           <span class="label">Customer ID:</span>
           <span class="value">{{ order.customerId }}</span>
@@ -91,7 +91,7 @@
 
       <!-- Order Info -->
       <div class="info-card">
-        <h3>💰 Información de Pago</h3>
+        <h3><i class="fas fa-credit-card"></i> Información de Pago</h3>
         <div class="info-row">
           <span class="label">Monto Total:</span>
           <span class="value amount">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
@@ -108,7 +108,7 @@
 
       <!-- Timestamps -->
       <div class="info-card">
-        <h3>📅 Fechas</h3>
+        <h3><i class="fas fa-calendar-alt"></i> Fechas</h3>
         <div class="info-row">
           <span class="label">Creada:</span>
           <span class="value">{{ formatDate(order.createdAt) }}</span>
@@ -131,10 +131,10 @@
     <!-- Order Items -->
     <div class="items-section">
       <div class="section-header">
-        <h3>📦 Items de la Orden</h3>
+        <h3><i class="fas fa-boxes"></i> Items de la Orden</h3>
         <button class="btn btn-sm btn-primary" (click)="openAddItemModal()" 
                 *ngIf="order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && order.status !== 'REFUNDED'">
-          + Agregar
+          <i class="fas fa-plus"></i> Agregar
         </button>
       </div>
       <div class="items-table-container" *ngIf="order.items && order.items.length > 0">
@@ -165,13 +165,15 @@
       </div>
       <div class="no-items" *ngIf="!order.items || order.items.length === 0">
         <p>No hay items en esta orden</p>
-        <button class="btn btn-primary" (click)="openAddItemModal()">Agregar primer item</button>
+        <button class="btn btn-primary" (click)="openAddItemModal()">
+          <i class="fas fa-plus"></i> Agregar primer item
+        </button>
       </div>
     </div>
 
     <!-- Audit Log -->
     <div class="audit-section">
-      <h3>📋 Historial de Auditoría ({{ auditLog.length }} eventos)</h3>
+      <h3><i class="fas fa-history"></i> Historial de Auditoría ({{ auditLog.length }} eventos)</h3>
       <div class="audit-timeline" *ngIf="auditLog.length > 0">
         <div class="audit-item" *ngFor="let audit of auditLog; let i = index">
           <div class="audit-marker" [ngClass]="'marker-' + audit.eventType.toLowerCase()"></div>
@@ -208,10 +210,12 @@
 
   <!-- Not Found -->
   <div class="not-found" *ngIf="!loading && !order && !error">
-    <div class="not-found-icon">🔍</div>
+    <div class="not-found-icon"><i class="fas fa-search"></i></div>
     <h3>Orden no encontrada</h3>
     <p>No se encontró la orden con ID: {{ orderId }}</p>
-    <a routerLink="/orders" class="btn btn-primary">Volver a la lista</a>
+    <a routerLink="/orders" class="btn btn-primary">
+      <i class="fas fa-arrow-left"></i> Volver a la lista
+    </a>
   </div>
 </div>
 
@@ -219,12 +223,12 @@
 <div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>❌ Cancelar Orden</h2>
+      <h2><i class="fas fa-times-circle"></i> Cancelar Orden</h2>
       <button class="modal-close" (click)="closeCancelModal()">×</button>
     </div>
     <div class="modal-body">
       <div class="warning-message">
-        <span class="warning-icon">⚠️</span>
+        <i class="fas fa-exclamation-triangle warning-icon"></i>
         <p>¿Estás seguro de que deseas cancelar esta orden?</p>
         <p class="order-id">Orden: {{ order?.orderId | slice:0:8 }}...</p>
       </div>
@@ -236,7 +240,7 @@
                   rows="3"></textarea>
       </div>
       <div class="modal-note">
-        <span class="note-icon">📤</span>
+        <i class="fas fa-paper-plane note-icon"></i>
         <span>Esta acción enviará un evento a Kafka y una notificación SNS al cliente.</span>
       </div>
     </div>
@@ -245,7 +249,7 @@
         Cancelar
       </button>
       <button class="btn btn-danger" (click)="confirmCancel()" [disabled]="cancelling">
-        <span *ngIf="!cancelling">Confirmar Cancelación</span>
+        <span *ngIf="!cancelling"><i class="fas fa-check"></i> Confirmar Cancelación</span>
         <span *ngIf="cancelling">Cancelando...</span>
       </button>
     </div>
@@ -256,7 +260,7 @@
 <div class="modal-overlay" *ngIf="showAddItemModal" (click)="closeAddItemModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>➕ Agregar Item</h2>
+      <h2><i class="fas fa-plus-circle"></i> Agregar Item</h2>
       <button class="modal-close" (click)="closeAddItemModal()">×</button>
     </div>
     <div class="modal-body">
@@ -287,7 +291,7 @@
       </button>
       <button class="btn btn-primary" (click)="addItem()" 
               [disabled]="addingItem || !newItem.productName || newItem.quantity <= 0 || newItem.unitPrice <= 0">
-        <span *ngIf="!addingItem">Agregar Item</span>
+        <span *ngIf="!addingItem"><i class="fas fa-plus"></i> Agregar Item</span>
         <span *ngIf="addingItem">Agregando...</span>
       </button>
     </div>

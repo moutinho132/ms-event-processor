@@ -1,0 +1,177 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="fas fa-users me-2"></i>Gestión de Usuarios</h2>
+        <button class="btn btn-primary" (click)="createUser()">
+          <i class="fas fa-plus me-1"></i> Nuevo Usuario
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4" *ngIf="stats">
+    <div class="col-md-4">
+      <div class="card bg-danger text-white">
+        <div class="card-body text-center">
+          <i class="fas fa-user-shield fa-2x mb-2"></i>
+          <h3>{{ stats.totalAdmins }}</h3>
+          <p class="mb-0">Administradores</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <i class="fas fa-user-tie fa-2x mb-2"></i>
+          <h3>{{ stats.totalSupervisors }}</h3>
+          <p class="mb-0">Supervisores</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <i class="fas fa-user fa-2x mb-2"></i>
+          <h3>{{ stats.totalCustomers }}</h3>
+          <p class="mb-0">Clientes</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter -->
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+        <div class="input-group">
+          <input type="text" class="form-control" formControlName="query" 
+                 placeholder="Buscar por nombre o email...">
+          <button class="btn btn-outline-secondary" type="submit">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <div class="btn-group w-100" role="group">
+        <button class="btn" 
+                [class.btn-secondary]="selectedRole !== null" 
+                [class.btn-primary]="selectedRole === null"
+                (click)="filterByRole(null)">
+          Todos
+        </button>
+        <button class="btn" 
+                [class.btn-outline-danger]="selectedRole !== 'ADMIN'" 
+                [class.btn-danger]="selectedRole === 'ADMIN'"
+                (click)="filterByRole('ADMIN')">
+          <i class="fas fa-user-shield me-1"></i> Admins
+        </button>
+        <button class="btn" 
+                [class.btn-outline-warning]="selectedRole !== 'SUPERVISOR'" 
+                [class.btn-warning]="selectedRole === 'SUPERVISOR'"
+                (click)="filterByRole('SUPERVISOR')">
+          <i class="fas fa-user-tie me-1"></i> Supervisores
+        </button>
+        <button class="btn" 
+                [class.btn-outline-info]="selectedRole !== 'CUSTOMER'" 
+                [class.btn-info]="selectedRole === 'CUSTOMER'"
+                (click)="filterByRole('CUSTOMER')">
+          <i class="fas fa-user me-1"></i> Clientes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Avatar</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Último Login</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="loading">
+              <td colspan="7" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let user of users" [class.table-secondary]="!user.active">
+              <td>
+                <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" 
+                     class="rounded-circle" width="40" height="40" 
+                     alt="{{ user.name }}">
+                <div *ngIf="!user.avatarUrl" 
+                     class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+                     style="width: 40px; height: 40px;">
+                  {{ user.name?.charAt(0)?.toUpperCase() }}
+                </div>
+              </td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+                  {{ getRoleLabel(user.role) }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.bg-success]="user.active" [class.bg-danger]="!user.active">
+                  {{ user.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>{{ user.lastLoginAt ? (user.lastLoginAt | date:'short') : 'Nunca' }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="editUser(user.userId)" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button *ngIf="user.active" class="btn btn-outline-danger" 
+                          (click)="deactivateUser(user.userId)" title="Desactivar">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                  <button *ngIf="!user.active" class="btn btn-outline-success" 
+                          (click)="activateUser(user.userId)" title="Activar">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!loading && users.length === 0">
+              <td colspan="7" class="text-center text-muted">
+                No se encontraron usuarios
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="changePage(currentPage - 1)">Anterior</a>
+          </li>
+          <li *ngFor="let page of [].constructor(totalPages); let i = index" 
+              class="page-item" [class.active]="i === currentPage">
+            <a class="page-link" (click)="changePage(i)">{{ i + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" (click)="changePage(currentPage + 1)">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

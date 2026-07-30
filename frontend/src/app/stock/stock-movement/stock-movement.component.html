@@ -1,0 +1,135 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/stock">Stock</a></li>
+          <li class="breadcrumb-item active">Nuevo Movimiento</li>
+        </ol>
+      </nav>
+      <h2><i class="fas fa-exchange-alt me-2"></i>Registrar Movimiento de Stock</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <form [formGroup]="movementForm" (ngSubmit)="onSubmit()">
+            <!-- Product Selection -->
+            <div class="mb-3">
+              <label for="productId" class="form-label">Producto *</label>
+              <select class="form-select" id="productId" formControlName="productId"
+                      [class.is-invalid]="productId?.invalid && productId?.touched">
+                <option value="">Seleccione un producto...</option>
+                <option *ngFor="let product of products" [value]="product.productId">
+                  {{ product.name }} - Stock: {{ product.stock }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="productId?.errors?.['required']">
+                Seleccione un producto
+              </div>
+            </div>
+
+            <!-- Selected Product Info -->
+            <div *ngIf="selectedProduct" class="alert alert-info mb-3">
+              <div class="d-flex align-items-center">
+                <img *ngIf="selectedProduct.imageUrl" [src]="selectedProduct.imageUrl" 
+                     class="rounded me-3" width="60" height="60" [alt]="selectedProduct.name">
+                <div>
+                  <strong>{{ selectedProduct.name }}</strong>
+                  <br>
+                  <span class="text-muted">Stock actual:</span>
+                  <span class="badge bg-primary ms-2">{{ selectedProduct.stock }} unidades</span>
+                  <span class="text-muted ms-3">Precio:</span>
+                  <span class="ms-2">{{ selectedProduct.price | currency }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Movement Type -->
+            <div class="mb-3">
+              <label class="form-label">Tipo de Movimiento *</label>
+              <div class="btn-group w-100" role="group">
+                <button *ngFor="let mt of movementTypes" 
+                        type="button" class="btn"
+                        [class.btn-outline-success]="type?.value !== mt.value && mt.value === 'IN'"
+                        [class.btn-success]="type?.value === mt.value && mt.value === 'IN'"
+                        [class.btn-outline-danger]="type?.value !== mt.value && mt.value === 'OUT'"
+                        [class.btn-danger]="type?.value === mt.value && mt.value === 'OUT'"
+                        [class.btn-outline-info]="type?.value !== mt.value && mt.value === 'ADJUSTMENT'"
+                        [class.btn-info]="type?.value === mt.value && mt.value === 'ADJUSTMENT'"
+                        (click)="type?.setValue(mt.value)">
+                  <i class="fas me-1" [ngClass]="mt.icon"></i>
+                  {{ mt.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="mb-3">
+              <label for="quantity" class="form-label">Cantidad *</label>
+              <input type="number" class="form-control" id="quantity" formControlName="quantity"
+                     [class.is-invalid]="quantity?.invalid && quantity?.touched"
+                     min="1">
+              <div class="invalid-feedback" *ngIf="quantity?.errors?.['required']">
+                La cantidad es requerida
+              </div>
+              <div class="invalid-feedback" *ngIf="quantity?.errors?.['min']">
+                La cantidad debe ser al menos 1
+              </div>
+            </div>
+
+            <!-- Reference ID -->
+            <div class="mb-3">
+              <label for="referenceId" class="form-label">Referencia</label>
+              <input type="text" class="form-control" id="referenceId" formControlName="referenceId"
+                     placeholder="Orden de compra, factura, etc.">
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notas</label>
+              <textarea class="form-control" id="notes" formControlName="notes"
+                        rows="2" placeholder="Observaciones adicionales"></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-secondary" (click)="cancel()">
+                <i class="fas fa-times me-1"></i> Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                <i *ngIf="!submitting" class="fas fa-check me-1"></i>
+                {{ submitting ? 'Procesando...' : 'Registrar' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="col-lg-4">
+      <div class="card bg-light">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Tipos de Movimiento</h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let mt of movementTypes" class="mb-3">
+            <h6>
+              <i class="fas me-2" [ngClass]="mt.icon"></i>
+              {{ mt.label }}
+            </h6>
+            <p class="text-muted small mb-0">
+              <span *ngIf="mt.value === 'IN'">Entrada de productos al inventario (compras, devoluciones)</span>
+              <span *ngIf="mt.value === 'OUT'">Salida de productos (merma, uso interno, dañados)</span>
+              <span *ngIf="mt.value === 'ADJUSTMENT'">Ajuste manual del inventario (conteo físico)</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

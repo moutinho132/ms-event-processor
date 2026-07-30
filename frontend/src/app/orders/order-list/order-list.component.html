@@ -1,7 +1,7 @@
 <div class="order-list-container">
   <!-- Header -->
   <div class="header">
-    <h1>📦 Gestión de Órdenes</h1>
+    <h1><i class="fas fa-shopping-cart"></i> Gestión de Órdenes</h1>
     <p class="subtitle">Microservicio Event-Driven - Procesamiento de Órdenes</p>
   </div>
 
@@ -9,10 +9,10 @@
   <div class="actions-bar">
     <div class="actions-left">
       <button class="btn btn-primary" (click)="createTestOrder()" [disabled]="loading">
-        <span class="icon">➕</span> Crear Orden Rápida
+        <i class="fas fa-plus"></i> Crear Orden Rápida
       </button>
       <button class="btn btn-secondary" (click)="sendTestMessage()" [disabled]="loading">
-        <span class="icon">📤</span> Enviar a Kafka
+        <i class="fas fa-paper-plane"></i> Enviar a Kafka
       </button>
     </div>
     <div class="actions-right">
@@ -20,11 +20,11 @@
               [ngClass]="notificationsEnabled ? 'btn-success' : 'btn-outline'" 
               (click)="enableNotifications()" 
               *ngIf="notificationService.isSupported()">
-        <span class="icon">{{ notificationsEnabled ? '🔔' : '🔕' }}</span> 
+        <i class="fas" [ngClass]="notificationsEnabled ? 'fa-bell' : 'fa-bell-slash'"></i> 
         {{ notificationsEnabled ? 'Notificaciones ON' : 'Activar Notificaciones' }}
       </button>
       <button class="btn btn-outline" (click)="loadOrders()" [disabled]="loading">
-        <span class="icon">🔄</span> Actualizar
+        <i class="fas fa-sync-alt"></i> Actualizar
       </button>
     </div>
   </div>
@@ -32,28 +32,28 @@
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon">📊</div>
+      <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
       <div class="stat-content">
         <div class="stat-value">{{ totalOrders }}</div>
         <div class="stat-label">Total Órdenes</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">⏳</div>
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
       <div class="stat-content">
         <div class="stat-value">{{ pendingCount }}</div>
         <div class="stat-label">Pendientes</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">✅</div>
+      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
       <div class="stat-content">
         <div class="stat-value">{{ processedCount }}</div>
         <div class="stat-label">Procesadas</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">❌</div>
+      <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
       <div class="stat-content">
         <div class="stat-value">{{ cancelledCount }}</div>
         <div class="stat-label">Canceladas</div>
@@ -69,7 +69,7 @@
 
   <!-- Error -->
   <div class="error-container" *ngIf="error">
-    <span class="error-icon">⚠️</span>
+    <i class="fas fa-exclamation-triangle error-icon"></i>
     <span>{{ error }}</span>
     <button class="btn btn-sm" (click)="loadOrders()">Reintentar</button>
   </div>
@@ -104,7 +104,7 @@
           <td>{{ formatDate(order.createdAt) }}</td>
           <td class="actions">
             <a [routerLink]="['/orders', order.orderId]" class="btn btn-sm btn-info">
-              Ver Detalles
+              <i class="fas fa-eye"></i> Ver Detalles
             </a>
           </td>
         </tr>
@@ -114,9 +114,11 @@
 
   <!-- Empty State -->
   <div class="empty-state" *ngIf="!loading && !error && orders.length === 0">
-    <div class="empty-icon">📭</div>
+    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
     <h3>No hay órdenes</h3>
     <p>Crea una orden de prueba para comenzar</p>
-    <button class="btn btn-primary" (click)="createTestOrder()">Crear Orden de Prueba</button>
+    <button class="btn btn-primary" (click)="createTestOrder()">
+      <i class="fas fa-plus"></i> Crear Orden de Prueba
+    </button>
   </div>
 </div>

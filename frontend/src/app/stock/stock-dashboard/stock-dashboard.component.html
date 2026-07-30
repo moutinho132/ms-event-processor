@@ -1,0 +1,174 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2><i class="fas fa-warehouse me-2"></i>Gestión de Stock</h2>
+        <button class="btn btn-primary" (click)="goToMovement()">
+          <i class="fas fa-exchange-alt me-1"></i> Nuevo Movimiento
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card stat-card bg-primary-gradient text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Total Productos</h6>
+              <h2 class="mb-0">{{ totalProducts }}</h2>
+            </div>
+            <i class="fas fa-boxes fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card bg-success-gradient text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Ventas (30 días)</h6>
+              <h2 class="mb-0">{{ totalSales }}</h2>
+            </div>
+            <i class="fas fa-chart-line fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card bg-warning-gradient text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="mb-1">Bajo Stock</h6>
+              <h2 class="mb-0">{{ totalLowStock }}</h2>
+            </div>
+            <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Top Selling Products -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Productos Más Vendidos</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-warning" role="status"></div>
+          </div>
+          <div *ngIf="!loading && topProducts.length === 0" class="text-center text-muted py-4">
+            No hay datos de ventas en los últimos 30 días
+          </div>
+          <div *ngFor="let product of topProducts" class="d-flex align-items-center mb-3">
+            <span class="badge bg-warning text-dark me-3" style="min-width: 30px;">
+              #{{ product.rank }}
+            </span>
+            <img *ngIf="product.imageUrl" [src]="product.imageUrl" 
+                 class="rounded me-3" width="50" height="50" [alt]="product.productName">
+            <div *ngIf="!product.imageUrl" 
+                 class="rounded bg-light d-flex align-items-center justify-content-center me-3"
+                 style="width: 50px; height: 50px;">
+              <i class="fas fa-image text-muted"></i>
+            </div>
+            <div class="flex-grow-1">
+              <strong>{{ product.productName }}</strong>
+              <br><small class="text-muted">{{ product.category }}</small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success mb-1">{{ product.totalSold }} vendidos</span>
+              <br>
+              <strong class="text-primary">{{ product.totalRevenue | currency }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Low Stock Products -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Productos con Bajo Stock</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-danger" role="status"></div>
+          </div>
+          <div *ngIf="!loading && lowStockProducts.length === 0" class="text-center text-success py-4">
+            <i class="fas fa-check-circle fa-2x mb-2"></i>
+            <p class="mb-0">Todos los productos tienen stock suficiente</p>
+          </div>
+          <div *ngFor="let product of lowStockProducts" class="d-flex align-items-center mb-3">
+            <img *ngIf="product.imageUrl" [src]="product.imageUrl" 
+                 class="rounded me-3" width="50" height="50" [alt]="product.name">
+            <div *ngIf="!product.imageUrl" 
+                 class="rounded bg-light d-flex align-items-center justify-content-center me-3"
+                 style="width: 50px; height: 50px;">
+              <i class="fas fa-image text-muted"></i>
+            </div>
+            <div class="flex-grow-1">
+              <strong>{{ product.name }}</strong>
+              <br><small class="text-muted">{{ product.category }}</small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-danger">{{ product.stock }} unidades</span>
+              <br>
+              <small class="text-muted">{{ product.price | currency }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Movements -->
+  <div class="row" *ngIf="recentMovements.length > 0">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-history me-2"></i>Movimientos Recientes</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Stock Ant.</th>
+                  <th>Stock Nuevo</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let movement of recentMovements">
+                  <td>
+                    <i class="fas me-1" [ngClass]="getMovementIcon(movement.type)"></i>
+                    {{ getMovementLabel(movement.type) }}
+                  </td>
+                  <td>{{ movement.productId }}</td>
+                  <td [class.text-success]="movement.type === 'IN'" 
+                      [class.text-danger]="movement.type === 'OUT' || movement.type === 'SALE'">
+                    {{ movement.type === 'IN' || movement.type === 'RETURN' ? '+' : '-' }}{{ movement.quantity }}
+                  </td>
+                  <td>{{ movement.previousStock }}</td>
+                  <td>{{ movement.newStock }}</td>
+                  <td>{{ movement.createdAt | date:'short' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

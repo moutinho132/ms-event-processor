@@ -77,6 +77,22 @@ export class OrderDetailComponent implements OnInit {
         this.auditLog = response.auditLog || [];
         this.loading = false;
         
+        // Construir items desde campos simples si no hay items
+        if (this.order && !this.order.items) {
+          // Si hay productName, construir items array desde campos simples
+          if (this.order.productName) {
+            this.order.items = [{
+              productId: this.order.productId || '',
+              productName: this.order.productName || '',
+              quantity: this.order.quantity || 1,
+              unitPrice: this.order.unitPrice || 0
+            }];
+          } else {
+            // Inicializar items como array vacío
+            this.order.items = [];
+          }
+        }
+        
         // Cargar transiciones válidas
         if (this.order) {
           this.loadValidTransitions();
@@ -143,8 +159,8 @@ export class OrderDetailComponent implements OnInit {
 
   // ==================== CAMBIO DE ESTADO ====================
 
-  canTransitionTo(status: OrderStatus): boolean {
-    return this.validTransitions.includes(status);
+  canTransitionTo(status: OrderStatus | string): boolean {
+    return this.validTransitions.some(s => s === status || s.toString() === status);
   }
 
   transitionToStatus(status: OrderStatus): void {
@@ -163,8 +179,8 @@ export class OrderDetailComponent implements OnInit {
           this.notificationService.notifyOrderUpdated(this.order!.orderId, status);
         }
         
-        // Si completó, mostrar mensaje especial
-        if (status === OrderStatus.PROCESSED && response.snsNotification) {
+        // Si completó (DELIVERED), mostrar mensaje especial
+        if (status === OrderStatus.DELIVERED && response.snsNotification) {
           this.notificationService.notifySuccess('¡Orden completada! Email enviado al cliente via SNS');
         } else {
           this.notificationService.notifySuccess(`Estado actualizado a ${this.getStatusLabel(status)}`);
@@ -297,13 +313,17 @@ export class OrderDetailComponent implements OnInit {
 
   getTransitionButtonClass(status: OrderStatus): string {
     switch (status) {
+      case OrderStatus.CONFIRMED:
+        return 'btn-info';
       case OrderStatus.PROCESSING:
         return 'btn-warning';
-      case OrderStatus.PROCESSED:
+      case OrderStatus.SHIPPED:
+        return 'btn-primary';
+      case OrderStatus.DELIVERED:
         return 'btn-success';
       case OrderStatus.CANCELLED:
         return 'btn-danger';
-      case OrderStatus.FAILED:
+      case OrderStatus.REFUNDED:
         return 'btn-secondary';
       default:
         return 'btn-outline';
