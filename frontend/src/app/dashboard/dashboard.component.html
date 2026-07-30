@@ -1,0 +1,121 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>📊 Dashboard</h1>
+    <button class="btn btn-refresh" (click)="refreshStats()">
+      🔄 Actualizar
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card total">
+      <div class="stat-icon">📦</div>
+      <div class="stat-content">
+        <h3>Total Órdenes</h3>
+        <p class="stat-value">{{ totalOrders }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <h3>Pendientes</h3>
+        <p class="stat-value">{{ pendingCount }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card processing">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-content">
+        <h3>En Proceso</h3>
+        <p class="stat-value">{{ processingCount }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card completed">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <h3>Completadas</h3>
+        <p class="stat-value">{{ completedCount }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card cancelled">
+      <div class="stat-icon">❌</div>
+      <div class="stat-content">
+        <h3>Canceladas</h3>
+        <p class="stat-value">{{ cancelledCount }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card revenue">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <h3>Ingresos</h3>
+        <p class="stat-value">{{ formatCurrency(totalRevenue) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid" *ngIf="!loading">
+    <!-- Status Distribution -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>📊 Distribución por Estado</h3>
+      </div>
+      <div class="chart-body">
+        <canvas baseChart
+                [type]="statusChartType"
+                [data]="statusChartData"
+                [options]="statusChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Trend -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>📈 Tendencia (Últimos 7 días)</h3>
+      </div>
+      <div class="chart-body">
+        <canvas baseChart
+                [type]="trendChartType"
+                [data]="trendChartData"
+                [options]="trendChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Revenue by Status -->
+    <div class="chart-card full-width">
+      <div class="chart-header">
+        <h3>💵 Ingresos por Estado</h3>
+      </div>
+      <div class="chart-body">
+        <canvas baseChart
+                [type]="revenueChartType"
+                [data]="revenueChartData"
+                [options]="revenueChartOptions">
+        </canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions" *ngIf="!loading">
+    <h3>⚡ Acciones Rápidas</h3>
+    <div class="actions-grid">
+      <a routerLink="/orders" class="action-btn">
+        <span class="action-icon">📋</span>
+        <span>Ver Órdenes</span>
+      </a>
+    </div>
+  </div>
+</div>

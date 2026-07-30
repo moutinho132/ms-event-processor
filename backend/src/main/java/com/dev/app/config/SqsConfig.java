@@ -6,15 +6,16 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
 import java.net.URI;
 
 /**
- * Configuración de AWS SQS y SNS Clients.
+ * Configuración de AWS SQS, SNS y S3 Clients.
  * 
- * Configura los clientes SQS y SNS con soporte para LocalStack en desarrollo
+ * Configura los clientes SQS, SNS y S3 con soporte para LocalStack en desarrollo
  * y pruebas locales.
  * 
  * @author MS-Event-Processor Team
@@ -67,6 +68,23 @@ public class SqsConfig {
                     AwsBasicCredentials.create(accessKey, secretKey)
                 ))
                 .endpointOverride(URI.create(sqsEndpoint))
+                .build();
+    }
+    
+    /**
+     * Configura el cliente S3 con endpoint personalizado para LocalStack.
+     * 
+     * @return S3Client configurado
+     */
+    @Bean
+    public S3Client s3Client() {
+        return S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKey, secretKey)
+                ))
+                .endpointOverride(URI.create(sqsEndpoint))
+                .forcePathStyle(true) // Necesario para LocalStack
                 .build();
     }
     

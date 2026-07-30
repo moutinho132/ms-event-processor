@@ -19,6 +19,10 @@ services:
       AWS_REGION: us-east-1
       JWT_SECRET: your-production-secret-key-must-be-at-least-32-characters-long
       JWT_ISSUER: ms-event-processor
+      # Ollama para Chat IA (alternativa local sin restricciones geográficas)
+      # Ollama corre en el host, usamos host.docker.internal para acceder desde el contenedor
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,21 +98,28 @@ services:
     networks:
       - ms-event-processor-network
 
-  # LocalStack para SQS
+  # LocalStack Pro - AWS Local con UI completa
   localstack:
-    image: localstack/localstack:3.7
+    image: localstack/localstack-pro:latest
     container_name: ms-event-processor-localstack
     environment:
-      - SERVICES=sqs
+      - LOCALSTACK_API_KEY=ls-ribIFujU-tAca-3793-4618-YegUWado1dec
+      - SERVICES=sqs,sns,lambda,dynamodb,s3,cloudwatch,cloudformation,iam,sts,apigateway
       - AWS_DEFAULT_REGION=us-east-1
       - EDGE_PORT=4566
       - DEBUG=0
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOCALSTACK_HOST=localstack
+      - PERSISTENCE=1
+      - EAGER_SERVICE_LOADING=1
     ports:
-      - "4566:4566"
+      - "4566:4566"   # API Gateway
+      - "4510-4559:4510-4559"   # Puertos para servicios externos
     volumes:
       - localstack_data:/var/lib/localstack
       - ./backend/localstack/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh:ro
+      - ./backend/lambda:/var/lib/lambda:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
       interval: 30s

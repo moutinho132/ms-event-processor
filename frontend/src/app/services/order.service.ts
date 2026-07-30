@@ -55,7 +55,8 @@ export class OrderService {
 
   // Agregar items a una orden
   addItemsToOrder(orderId: string, items: OrderItem[]): Observable<ApiResponse<Order>> {
-    return this.http.post<ApiResponse<Order>>(`${this.apiUrl}/${orderId}/items`, { items });
+    // Backend espera el array directamente, no un objeto con items
+    return this.http.post<ApiResponse<Order>>(`${this.apiUrl}/${orderId}/items`, items);
   }
 
   // Obtener transiciones válidas
