@@ -6,9 +6,46 @@
         <span class="logo-icon">📦</span>
         <span class="logo-text">MS-Event-Processor</span>
       </div>
-      <nav class="nav-menu">
-        <a routerLink="/orders" routerLinkActive="active">Órdenes</a>
-      </nav>
+      
+      @if (authService.isAuthenticated()) {
+        <nav class="nav-menu">
+          <a routerLink="/dashboard" routerLinkActive="active">
+            <i class="fas fa-chart-pie"></i> Dashboard
+          </a>
+          <a routerLink="/orders" routerLinkActive="active">
+            <i class="fas fa-shopping-cart"></i> Órdenes
+          </a>
+          <a routerLink="/users" routerLinkActive="active">
+            <i class="fas fa-users"></i> Usuarios
+          </a>
+          <a routerLink="/locals" routerLinkActive="active">
+            <i class="fas fa-store"></i> Locales
+          </a>
+          <a routerLink="/warehouses" routerLinkActive="active">
+            <i class="fas fa-warehouse"></i> Almacenes
+          </a>
+          <a routerLink="/products" routerLinkActive="active">
+            <i class="fas fa-boxes"></i> Productos
+          </a>
+          <a routerLink="/stock" routerLinkActive="active">
+            <i class="fas fa-cubes"></i> Stock
+          </a>
+        </nav>
+        
+        <div class="user-menu">
+          <div class="user-avatar">
+            {{ getUserInitial() }}
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ authService.getCurrentUser()?.name }}</span>
+            <span class="user-role">{{ getUserRole() }}</span>
+          </div>
+          <button class="btn btn-sm btn-logout" (click)="logout()" title="Cerrar sesión">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="logout-label">Cerrar sesión</span>
+          </button>
+        </div>
+      }
     </div>
   </header>
 
@@ -24,3 +61,6 @@
     </p>
   </footer>
 </div>
+
+<!-- Chat IA flotante -->
+<app-chat></app-chat>

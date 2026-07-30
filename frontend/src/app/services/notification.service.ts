@@ -150,4 +150,31 @@ export class NotificationService {
       tag: 'success'
     });
   }
+
+  // Convenience methods for UI feedback
+  showError(message: string): void {
+    this.notifyError(message);
+    console.error(message);
+  }
+
+  showSuccess(message: string): void {
+    this.notifySuccess(message);
+    console.log(message);
+  }
+
+  showWarning(message: string): void {
+    this.notify({
+      title: 'Advertencia',
+      body: message,
+      tag: 'warning'
+    });
+  }
+
+  showInfo(message: string): void {
+    this.notify({
+      title: 'Información',
+      body: message,
+      tag: 'info'
+    });
+  }
 }

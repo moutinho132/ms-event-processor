@@ -33,10 +33,14 @@ export interface Order {
   id: number;
   orderId: string;
   customerId: string;
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+  unitPrice?: number;
   status: OrderStatus;
   totalAmount: number;
   currency: string;
-  items: OrderItem[];
+  items?: OrderItem[];
   shippingAddress?: ShippingAddress;
   processedAt?: Date;
   cancelledAt?: Date;
@@ -49,11 +53,16 @@ export interface OrderAudit {
   id: number;
   orderId: string;
   eventType: OrderEventType;
+  oldStatus?: string;
+  newStatus?: string;
   status: OrderStatus;
   processedAt: Date;
   correlationId: string;
-  source: string;
+  source?: string;
   notes?: string;
+  success?: boolean;
+  errorMessage?: string;
+  processingTimeMs?: number;
 }
 
 export interface ApiResponse<T> {
